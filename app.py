@@ -33,23 +33,51 @@ def reset_state():
     st.session_state["clustering_labels"] = None
     st.session_state["data_ready"] = False
 
-# Fungsi untuk layout tombol dengan spasi yang sesuai
+# Fungsi layout untuk tombol
 def layout_buttons():
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
         if st.button("Reset", key="reset", use_container_width=True):
             reset_state()
             st.success("Semua data dan analisis telah direset.")
     with col2:
+        # Navigation bar yang digunakan untuk memilih halaman
         menu = st.radio(
             "Navigasi",
             ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
-            horizontal=True
+            horizontal=True,
+            label_visibility="collapsed"
         )
     return menu
 
 # Menampilkan tombol Reset dan navigasi
 menu = layout_buttons()
+
+# CSS untuk menyesuaikan tampilan lebih bersih
+st.markdown("""
+    <style>
+    .streamlit-expanderHeader {
+        font-size: 22px !important;
+        color: #4CAF50;
+    }
+    .css-1v3fvcr {
+        background-color: #212121 !important;
+    }
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 5px;
+        padding: 10px 15px;
+        text-align: center;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Halaman Upload Data
 if menu == "Upload Data":
@@ -58,7 +86,7 @@ if menu == "Upload Data":
     with col1:
         uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"], label_visibility="collapsed")
     with col2:
-        if st.button("Gunakan Data Default"):
+        if st.button("Gunakan Data Default", use_container_width=True):
             st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
             st.session_state["data_ready"] = False
             st.success("Data default dimuat!")
