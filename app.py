@@ -25,7 +25,7 @@ if "processed_data" not in st.session_state:
 if "clustering_labels" not in st.session_state:
     st.session_state["clustering_labels"] = None
 if "data_ready" not in st.session_state:
-    st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
+    st.session_state["data_ready"] = False 
 
 # Fungsi reset untuk mengembalikan session state ke keadaan awal
 def reset_state():
@@ -71,18 +71,18 @@ if menu == "Upload Data":
     
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["data_ready"] = False  # Reset setelah upload file baru
+        st.session_state["data_ready"] = False  
         st.success("Data berhasil dimuat!")
 
-    col1, col2 = st.columns(2)  # Membuat dua kolom
+    col1, col2 = st.columns(2) 
     with col1:
         if st.button("Gunakan Data Default"):
-            st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-            st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
+            st.session_state["data"] = pd.read_csv("case1.csv")  
+            st.session_state["data_ready"] = False  
             st.success("Data default dimuat!")
     with col2:
         if st.button("Analyze"):
-            st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
+            st.session_state["data_ready"] = True 
             st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
     if st.session_state["data"] is not None:
@@ -135,7 +135,7 @@ elif menu == "Clustering":
     if st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
-        k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=3)
+        k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=2)
         if st.button("Jalankan K-Means"):
             kmeans = KMeans(n_clusters=k, random_state=42)
             st.session_state["clustering_labels"] = kmeans.fit_predict(st.session_state["processed_data"])
