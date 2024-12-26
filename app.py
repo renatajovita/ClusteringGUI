@@ -28,42 +28,33 @@ if "analyzed" not in st.session_state:
     st.session_state["analyzed"] = False
 
 # Tab Navigasi
-tabs = st.tabs(["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Visualization", "Download"])
+tabs = st.tabs(["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Visualization", "Download"])
 
-# Tab 1: Kelompok
+# Tab 1: Upload Data
 with tabs[0]:
-    st.title("Clustering Analysis GUI")
-    st.write("""
-    ## Disusun oleh:
-    - **Alya Faadhila Rosyid** (24050122130049)
-    - **Mesakh Besta Anugrah** (24050122130058)
-    - **Renata Jovita Aurelia Dinda** (24050122130094)
-    
-    ### DEPARTEMEN STATISTIKA  
-    FAKULTAS SAINS DAN MATEMATIKA  
-    UNIVERSITAS DIPONEGORO  
-    SEMARANG - 2024
-    """)
-
-# Tab 2: Upload Data
-with tabs[1]:
     st.title("1. Upload Data")
 
-    # Opsi unggah data
+    # Tombol unggah data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
     use_default = st.button("Gunakan Data Default")
     analyze_button = st.button("Analyze")
 
-    # Logika upload atau gunakan data default
-    if uploaded_file:
+    # Logika upload data
+    if uploaded_file is not None:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["analyzed"] = False  # Reset analyzed jika ada data baru
+        st.session_state["processed_data"] = None
+        st.session_state["clustering_labels"] = None
+        st.session_state["analyzed"] = False
         st.success("Data berhasil dimuat dari file.")
+
+    # Logika gunakan data default
     elif use_default:
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["analyzed"] = False  # Reset analyzed jika ada data baru
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["processed_data"] = None
+        st.session_state["clustering_labels"] = None
+        st.session_state["analyzed"] = False
         st.success("Data default berhasil dimuat.")
-    
+
     # Tombol Analyze
     if analyze_button:
         if st.session_state["data"] is not None:
@@ -77,8 +68,8 @@ with tabs[1]:
         st.write("**Data yang Dimuat:**")
         st.dataframe(st.session_state["data"])
 
-# Tab 3: Preprocessing
-with tabs[2]:
+# Tab 2: Preprocessing
+with tabs[1]:
     st.title("2. Preprocessing")
     if not st.session_state["analyzed"]:
         st.warning("Silakan klik 'Analyze' di tab 'Upload Data' untuk melanjutkan.")
@@ -94,8 +85,8 @@ with tabs[2]:
                 columns=st.session_state["data"].select_dtypes(include=['float64', 'int64']).columns
             ))
 
-# Tab 4: Elbow Method
-with tabs[3]:
+# Tab 3: Elbow Method
+with tabs[2]:
     st.title("3. Elbow Method")
     if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
@@ -114,8 +105,8 @@ with tabs[3]:
             ax.set_title("Metode Elbow")
             st.pyplot(fig)
 
-# Tab 5: Clustering
-with tabs[4]:
+# Tab 4: Clustering
+with tabs[3]:
     st.title("4. Clustering")
     if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
@@ -129,8 +120,8 @@ with tabs[4]:
             st.write("Data dengan hasil clustering:")
             st.dataframe(st.session_state["data"])
 
-# Tab 6: Visualization
-with tabs[5]:
+# Tab 5: Visualization
+with tabs[4]:
     st.title("5. Visualization")
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
@@ -160,8 +151,8 @@ with tabs[5]:
                 ax.set_zlabel("Komponen Utama 3")
                 st.pyplot(fig)
 
-# Tab 7: Download
-with tabs[6]:
+# Tab 6: Download
+with tabs[5]:
     st.title("6. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
