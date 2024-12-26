@@ -20,6 +20,8 @@ st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 # Session state untuk menyimpan data
 if "data" not in st.session_state:
     st.session_state["data"] = None
+if "data_source" not in st.session_state:
+    st.session_state["data_source"] = None  # Menyimpan sumber data ("upload" atau "default")
 if "processed_data" not in st.session_state:
     st.session_state["processed_data"] = None
 if "clustering_labels" not in st.session_state:
@@ -48,16 +50,39 @@ with tabs[0]:
 # Tab 2: Upload Data
 with tabs[1]:
     st.title("1. Upload Data")
+    
+    # Tampilkan sumber data aktif
+    if st.session_state["data_source"]:
+        st.info(f"**Sumber Data Saat Ini**: {st.session_state['data_source'].capitalize()}")
+
+    # Opsi unggah data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.success("Data berhasil dimuat!")
+        st.session_state["data_source"] = "upload"
+        st.success("Data berhasil diunggah dan digunakan!")
+    
+    # Opsi gunakan data default
     if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.success("Data default dimuat!")
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data_source"] = "default"
+        st.success("Data default berhasil digunakan!")
+    
+    # Reset data
+    if st.button("Reset Data"):
+        st.session_state["data"] = None
+        st.session_state["data_source"] = None
+        st.session_state["processed_data"] = None
+        st.session_state["clustering_labels"] = None
+        st.session_state["relabel_mapping"] = {}
+        st.warning("Data telah direset.")
+
+    # Tampilkan data saat ini
     if st.session_state["data"] is not None:
-        st.write("Data yang Dimuat:")
+        st.write("**Data yang Dimuat Saat Ini:**")
         st.dataframe(st.session_state["data"])
+    else:
+        st.warning("Belum ada data yang dimuat. Silakan unggah data atau gunakan data default.")
 
 # Tab 3: Preprocessing
 with tabs[2]:
