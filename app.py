@@ -15,7 +15,7 @@ def download_csv(dataframe, filename="clustered_data.csv"):
     return href
 
 # Konfigurasi Streamlit
-st.set_page_config(page_title="Clustering Analysis App", layout="wide")
+st.set_page_config(page_title="Clustering Analysis App", layout="wide", initial_sidebar_state="expanded")
 
 # Session state untuk menyimpan data
 if "data" not in st.session_state:
@@ -36,9 +36,19 @@ def reset_state():
 
 # Fungsi layout untuk tombol
 def layout_buttons():
+    st.markdown("""<style>
+        .stButton>button {
+            background-color: #6C63FF;
+            color: white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+    </style>""", unsafe_allow_html=True)
+
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("Reset"):
+        if st.button("Reset", key="reset_btn"):
             reset_state()
             st.success("Semua data dan analisis telah direset.")
     with col2:
@@ -55,7 +65,8 @@ menu = layout_buttons()
 
 # Halaman Upload Data
 if menu == "Upload Data":
-    st.title("1. Upload Data")
+    st.title("1. Upload Data", anchor="upload")
+    st.markdown("<hr>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
     
     if uploaded_file:
@@ -78,7 +89,8 @@ if menu == "Upload Data":
 
 # Halaman Preprocessing
 elif menu == "Preprocessing":
-    st.title("2. Preprocessing")
+    st.title("2. Preprocessing", anchor="preprocessing")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if not st.session_state["data_ready"]:
         st.warning("Silakan klik 'Analyze' di tab 'Upload Data' untuk melanjutkan.")
     else:
@@ -95,7 +107,8 @@ elif menu == "Preprocessing":
 
 # Halaman Elbow Method
 elif menu == "Elbow Method":
-    st.title("3. Elbow Method")
+    st.title("3. Elbow Method", anchor="elbow")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
@@ -115,7 +128,8 @@ elif menu == "Elbow Method":
 
 # Halaman Clustering
 elif menu == "Clustering":
-    st.title("4. Clustering")
+    st.title("4. Clustering", anchor="clustering")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
@@ -130,7 +144,8 @@ elif menu == "Clustering":
 
 # Halaman Evaluation
 elif menu == "Evaluation":
-    st.title("5. Evaluation")
+    st.title("5. Evaluation", anchor="evaluation")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
@@ -142,7 +157,8 @@ elif menu == "Evaluation":
 
 # Halaman Visualization
 elif menu == "Visualization":
-    st.title("6. Visualization")
+    st.title("6. Visualization", anchor="visualization")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
@@ -173,7 +189,8 @@ elif menu == "Visualization":
 
 # Halaman Relabel Clusters
 elif menu == "Relabel":
-    st.title("7. Relabel Clusters")
+    st.title("7. Relabel Clusters", anchor="relabel")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
@@ -191,7 +208,8 @@ elif menu == "Relabel":
 
 # Halaman Download
 elif menu == "Download":
-    st.title("8. Download")
+    st.title("8. Download", anchor="download")
+    st.markdown("<hr>", unsafe_allow_html=True)
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
