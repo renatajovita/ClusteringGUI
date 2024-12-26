@@ -1,16 +1,11 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
 import base64
 
 # Fungsi untuk mengunduh DataFrame sebagai CSV
 def download_csv(dataframe, filename="clustered_data.csv"):
     csv = dataframe.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()  # Encoding ke Base64
+    b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Klik di sini untuk mengunduh file CSV</a>'
     return href
 
@@ -25,7 +20,7 @@ if "processed_data" not in st.session_state:
 if "clustering_labels" not in st.session_state:
     st.session_state["clustering_labels"] = None
 if "data_ready" not in st.session_state:
-    st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
+    st.session_state["data_ready"] = False
 
 # Fungsi reset untuk mengembalikan session state ke keadaan awal
 def reset_state():
@@ -38,7 +33,7 @@ def reset_state():
 def layout_buttons():
     col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
-        if st.button("Reset", key="reset"):
+        if st.button("Reset", key="reset", use_container_width=True):
             reset_state()
             st.success("Semua data dan analisis telah direset.")
     with col2:
