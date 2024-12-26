@@ -27,6 +27,13 @@ if "clustering_labels" not in st.session_state:
 if "data_ready" not in st.session_state:
     st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
 
+# Header Aplikasi
+st.title("Clustering Analysis App")
+st.write("""
+    Aplikasi ini digunakan untuk melakukan analisis clustering dengan langkah-langkah seperti preprocessing, elbow method, 
+    clustering, evaluasi, visualisasi, dan download data clustering yang telah dianalisis.
+""")
+
 # Sidebar navigasi
 st.sidebar.title("Navigasi")
 menu = st.sidebar.radio(
@@ -38,12 +45,12 @@ menu = st.sidebar.radio(
 if menu == "Upload Data":
     st.title("1. Upload Data")
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
-    
+
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["data_ready"] = False  # Reset setelah upload file baru
         st.success("Data berhasil dimuat!")
-        
+
     if st.button("Gunakan Data Default"):
         st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
@@ -52,7 +59,7 @@ if menu == "Upload Data":
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
-    
+
     if st.button("Analyze"):
         st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
         st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
