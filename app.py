@@ -36,7 +36,7 @@ def reset_state():
 
 # Fungsi layout untuk tombol
 def layout_buttons():
-    col1, col2 = st.columns([1, 4])
+    col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
         if st.button("Reset"):
             reset_state()
@@ -56,22 +56,25 @@ menu = layout_buttons()
 # Halaman Upload Data
 if menu == "Upload Data":
     st.title("1. Upload Data")
-    uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
-    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
+    with col2:
+        if st.button("Gunakan Data Default"):
+            st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
+            st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
+            st.success("Data default dimuat!")
+
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["data_ready"] = False  # Reset setelah upload file baru
         st.success("Data berhasil dimuat!")
-        
-    if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
-        st.success("Data default dimuat!")
 
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
     
+    # Menambahkan tombol Analyze
     if st.button("Analyze"):
         st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
         st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
