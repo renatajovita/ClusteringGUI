@@ -17,7 +17,7 @@ def download_csv(dataframe, filename="clustered_data.csv"):
 # Konfigurasi Streamlit
 st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 
-# Session state untuk menyimpan data
+# Session state untuk menyimpan status dan data
 if "data" not in st.session_state:
     st.session_state["data"] = None
 if "processed_data" not in st.session_state:
@@ -34,22 +34,22 @@ tabs = st.tabs(["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "V
 with tabs[0]:
     st.title("1. Upload Data")
 
-    # Tombol unggah data
+    # Input data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
     use_default = st.button("Gunakan Data Default")
     analyze_button = st.button("Analyze")
 
-    # Logika upload data
-    if uploaded_file is not None:
+    # Logika unggah data
+    if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["processed_data"] = None
         st.session_state["clustering_labels"] = None
         st.session_state["analyzed"] = False
         st.success("Data berhasil dimuat dari file.")
 
-    # Logika gunakan data default
+    # Logika data default
     elif use_default:
-        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["processed_data"] = None
         st.session_state["clustering_labels"] = None
         st.session_state["analyzed"] = False
@@ -61,9 +61,9 @@ with tabs[0]:
             st.session_state["analyzed"] = True
             st.success("Data siap untuk analisis selanjutnya.")
         else:
-            st.error("Tidak ada data yang dimuat. Silakan unggah data atau gunakan data default.")
+            st.error("Silakan unggah data atau gunakan data default sebelum melanjutkan.")
 
-    # Tampilkan data
+    # Tampilkan data yang dimuat
     if st.session_state["data"] is not None:
         st.write("**Data yang Dimuat:**")
         st.dataframe(st.session_state["data"])
