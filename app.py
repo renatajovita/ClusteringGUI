@@ -1,16 +1,20 @@
 import streamlit as st
 import pandas as pd
 import base64
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 # Fungsi untuk mengunduh DataFrame sebagai CSV
 def download_csv(dataframe, filename="clustered_data.csv"):
     csv = dataframe.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Klik di sini untuk mengunduh file CSV</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; text-align: center;">Klik di sini untuk mengunduh file CSV</a>'
     return href
 
 # Konfigurasi Streamlit
-st.set_page_config(page_title="Clustering Analysis App", layout="wide")
+st.set_page_config(page_title="Clustering Analysis App", layout="wide", initial_sidebar_state="collapsed")
 
 # Session state untuk menyimpan data
 if "data" not in st.session_state:
@@ -29,15 +33,14 @@ def reset_state():
     st.session_state["clustering_labels"] = None
     st.session_state["data_ready"] = False
 
-# Fungsi layout untuk tombol
+# Fungsi untuk layout tombol dengan spasi yang sesuai
 def layout_buttons():
-    col1, col2, col3 = st.columns([1, 3, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col1:
         if st.button("Reset", key="reset", use_container_width=True):
             reset_state()
             st.success("Semua data dan analisis telah direset.")
     with col2:
-        # Navigation bar yang digunakan untuk memilih halaman
         menu = st.radio(
             "Navigasi",
             ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
@@ -57,22 +60,21 @@ if menu == "Upload Data":
     with col2:
         if st.button("Gunakan Data Default"):
             st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-            st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
+            st.session_state["data_ready"] = False
             st.success("Data default dimuat!")
 
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["data_ready"] = False  # Reset setelah upload file baru
+        st.session_state["data_ready"] = False
         st.success("Data berhasil dimuat!")
 
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
-    
-    # Menambahkan tombol Analyze
-    st.markdown("<br>", unsafe_allow_html=True)  # Membuat jarak
+
+    # Tombol Analyze untuk melanjutkan ke preprocessing
     if st.button("Analyze", key="analyze", use_container_width=True):
-        st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
+        st.session_state["data_ready"] = True
         st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
 # Halaman Preprocessing
