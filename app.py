@@ -24,12 +24,14 @@ if "processed_data" not in st.session_state:
     st.session_state["processed_data"] = None
 if "clustering_labels" not in st.session_state:
     st.session_state["clustering_labels"] = None
+if "relabel_mapping" not in st.session_state:
+    st.session_state["relabel_mapping"] = {}
 
 # Sidebar navigasi
 st.sidebar.title("Navigasi")
 menu = st.sidebar.radio(
     "Pilih Halaman:",
-    ["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"]
+    ["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel Clusters", "Download"]
 )
 
 # Halaman Kelompok
@@ -55,7 +57,7 @@ elif menu == "Upload Data":
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.success("Data berhasil dimuat!")
     if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
         st.success("Data default dimuat!")
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
@@ -156,9 +158,26 @@ elif menu == "Visualization":
                 ax.set_zlabel("Komponen Utama 3")
                 st.pyplot(fig)
 
+# Halaman Relabel Clusters
+elif menu == "Relabel Clusters":
+    st.title("7. Relabel Clusters")
+    if st.session_state["clustering_labels"] is None:
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
+    else:
+        unique_clusters = sorted(set(st.session_state["clustering_labels"]))
+        for cluster in unique_clusters:
+            new_label = st.text_input(f"Label baru untuk Cluster {cluster}:", f"Cluster {cluster}")
+            st.session_state["relabel_mapping"][cluster] = new_label
+
+        if st.button("Perbarui Label"):
+            st.session_state["data"]["Cluster"] = st.session_state["data"]["Cluster"].map(st.session_state["relabel_mapping"])
+            st.success("Label berhasil diperbarui!")
+            st.write("Data dengan label baru:")
+            st.dataframe(st.session_state["data"])
+
 # Halaman Download
 elif menu == "Download":
-    st.title("7. Download")
+    st.title("8. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
