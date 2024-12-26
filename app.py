@@ -27,19 +27,12 @@ if "clustering_labels" not in st.session_state:
 if "relabel_mapping" not in st.session_state:
     st.session_state["relabel_mapping"] = {}
 
-# Header utama aplikasi
-st.title("Clustering Analysis App")
-st.write("Analisis clustering sederhana dengan fitur preprocessing, elbow method, clustering, evaluasi, relabel, dan download hasil.")
+# Tab Navigasi
+tabs = st.tabs(["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel Clusters", "Download"])
 
-# Dropdown untuk navigasi antar langkah
-workflow = st.selectbox(
-    "Pilih Langkah:",
-    ["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel Clusters", "Download"]
-)
-
-# Workflow: Kelompok
-if workflow == "Kelompok":
-    st.subheader("Tentang Kelompok")
+# Tab 1: Kelompok
+with tabs[0]:
+    st.title("Clustering Analysis GUI")
     st.write("""
     ## Disusun oleh:
     - **Alya Faadhila Rosyid** (24050122130049)
@@ -52,25 +45,25 @@ if workflow == "Kelompok":
     SEMARANG - 2024
     """)
 
-# Workflow: Upload Data
-elif workflow == "Upload Data":
-    st.subheader("1. Upload Data")
+# Tab 2: Upload Data
+with tabs[1]:
+    st.title("1. Upload Data")
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.success("Data berhasil dimuat!")
     if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.success("Data default dimuat!")
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
 
-# Workflow: Preprocessing
-elif workflow == "Preprocessing":
-    st.subheader("2. Preprocessing")
+# Tab 3: Preprocessing
+with tabs[2]:
+    st.title("2. Preprocessing")
     if st.session_state["data"] is None:
-        st.warning("Silakan unggah data terlebih dahulu di langkah 'Upload Data'.")
+        st.warning("Silakan unggah data terlebih dahulu di tab 'Upload Data'.")
     else:
         if st.button("Standarisasi Data"):
             scaler = StandardScaler()
@@ -83,11 +76,11 @@ elif workflow == "Preprocessing":
                 columns=st.session_state["data"].select_dtypes(include=['float64', 'int64']).columns
             ))
 
-# Workflow: Elbow Method
-elif workflow == "Elbow Method":
-    st.subheader("3. Elbow Method")
+# Tab 4: Elbow Method
+with tabs[3]:
+    st.title("3. Elbow Method")
     if st.session_state["processed_data"] is None:
-        st.warning("Silakan lakukan preprocessing data di langkah 'Preprocessing'.")
+        st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         if st.button("Lihat Grafik Elbow"):
             sse = []
@@ -103,11 +96,11 @@ elif workflow == "Elbow Method":
             ax.set_title("Metode Elbow")
             st.pyplot(fig)
 
-# Workflow: Clustering
-elif workflow == "Clustering":
-    st.subheader("4. Clustering")
+# Tab 5: Clustering
+with tabs[4]:
+    st.title("4. Clustering")
     if st.session_state["processed_data"] is None:
-        st.warning("Silakan lakukan preprocessing data di langkah 'Preprocessing'.")
+        st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=3)
         if st.button("Jalankan K-Means"):
@@ -118,11 +111,11 @@ elif workflow == "Clustering":
             st.write("Data dengan hasil clustering:")
             st.dataframe(st.session_state["data"])
 
-# Workflow: Evaluation
-elif workflow == "Evaluation":
-    st.subheader("5. Evaluation")
+# Tab 6: Evaluation
+with tabs[5]:
+    st.title("5. Evaluation")
     if st.session_state["clustering_labels"] is None:
-        st.warning("Silakan lakukan clustering di langkah 'Clustering'.")
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
         if st.button("Evaluasi Klaster"):
             silhouette_avg = silhouette_score(
@@ -130,11 +123,11 @@ elif workflow == "Evaluation":
             )
             st.write(f"Silhouette Score: {silhouette_avg:.2f}")
 
-# Workflow: Visualization
-elif workflow == "Visualization":
-    st.subheader("6. Visualization")
+# Tab 7: Visualization
+with tabs[6]:
+    st.title("6. Visualization")
     if st.session_state["clustering_labels"] is None:
-        st.warning("Silakan lakukan clustering di langkah 'Clustering'.")
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
         choice = st.radio("Pilih Visualisasi", ["2D PCA", "3D PCA"])
         if st.button("Tampilkan Visualisasi"):
@@ -161,11 +154,11 @@ elif workflow == "Visualization":
                 ax.set_zlabel("Komponen Utama 3")
                 st.pyplot(fig)
 
-# Workflow: Relabel Clusters
-elif workflow == "Relabel Clusters":
-    st.subheader("7. Relabel Clusters")
+# Tab 8: Relabel Clusters
+with tabs[7]:
+    st.title("7. Relabel Clusters")
     if st.session_state["clustering_labels"] is None:
-        st.warning("Silakan lakukan clustering di langkah 'Clustering'.")
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
         unique_clusters = sorted(set(st.session_state["clustering_labels"]))
         for cluster in unique_clusters:
@@ -178,9 +171,9 @@ elif workflow == "Relabel Clusters":
             st.write("Data dengan label baru:")
             st.dataframe(st.session_state["data"])
 
-# Workflow: Download
-elif workflow == "Download":
-    st.subheader("8. Download")
+# Tab 9: Download
+with tabs[8]:
+    st.title("8. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
