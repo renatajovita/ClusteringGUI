@@ -32,7 +32,7 @@ if uploaded_file is not None:
 else:
     st.sidebar.write("Atau gunakan data default:")
     if st.sidebar.button("Gunakan Data Default"):
-        data = pd.read_csv("/path/to/your/default/case1.csv")  # Ganti path sesuai kebutuhan
+        data = pd.read_csv("case1.csv")  # Ganti path sesuai kebutuhan
         st.sidebar.success("Data default dimuat!")
 
 # Menampilkan data jika ada
