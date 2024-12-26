@@ -11,7 +11,7 @@ import base64
 def download_csv(dataframe, filename="clustered_data.csv"):
     csv = dataframe.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()  # Encoding ke Base64
-    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Klik di sini untuk mengunduh file CSV</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}" style="background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Klik di sini untuk mengunduh file CSV</a>'
     return href
 
 # Konfigurasi Streamlit
@@ -38,7 +38,7 @@ def reset_state():
 def layout_buttons():
     col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
-        if st.button("Reset"):
+        if st.button("Reset", key="reset"):
             reset_state()
             st.success("Semua data dan analisis telah direset.")
     with col2:
@@ -58,7 +58,7 @@ if menu == "Upload Data":
     st.title("1. Upload Data")
     col1, col2 = st.columns([3, 1])
     with col1:
-        uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
+        uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"], label_visibility="collapsed")
     with col2:
         if st.button("Gunakan Data Default"):
             st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
@@ -75,7 +75,8 @@ if menu == "Upload Data":
         st.dataframe(st.session_state["data"])
     
     # Menambahkan tombol Analyze
-    if st.button("Analyze"):
+    st.markdown("<br>", unsafe_allow_html=True)  # Membuat jarak
+    if st.button("Analyze", key="analyze", use_container_width=True):
         st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
         st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
