@@ -45,7 +45,7 @@ if menu == "Upload Data":
         st.success("Data berhasil dimuat!")
         
     if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
         st.success("Data default dimuat!")
 
