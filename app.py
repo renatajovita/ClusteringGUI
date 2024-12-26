@@ -61,7 +61,7 @@ with tabs[1]:
         st.write("Data dari file berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
 
     elif use_default:
-        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["analyzed"] = False
         st.write("Data default berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
 
