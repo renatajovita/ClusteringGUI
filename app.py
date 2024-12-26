@@ -17,7 +17,7 @@ def download_csv(dataframe, filename="clustered_data.csv"):
 # Konfigurasi Streamlit
 st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 
-# Session state untuk menyimpan status dan data
+# Inisialisasi session state
 if "data" not in st.session_state:
     st.session_state["data"] = None
 if "processed_data" not in st.session_state:
@@ -39,15 +39,13 @@ with tabs[0]:
     use_default = st.button("Gunakan Data Default")
     analyze_button = st.button("Analyze")
 
-    # Logika unggah data
+    # Reset data jika file baru diunggah atau default dipilih
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["processed_data"] = None
         st.session_state["clustering_labels"] = None
         st.session_state["analyzed"] = False
         st.success("Data berhasil dimuat dari file.")
-
-    # Logika data default
     elif use_default:
         st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["processed_data"] = None
