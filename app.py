@@ -36,8 +36,11 @@ with tabs[0]:
 
     # Input data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
-    use_default = st.button("Gunakan Data Default")
-    analyze_button = st.button("Analyze")
+    col1, col2 = st.columns(2)
+    with col1:
+        use_default = st.button("Gunakan Data Default")
+    with col2:
+        analyze_button = st.button("Analyze")
 
     # Reset data jika file baru diunggah atau default dipilih
     if uploaded_file:
