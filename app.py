@@ -64,7 +64,7 @@ with tabs[1]:
     
     # Opsi gunakan data default
     if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["data_source"] = "default"
         st.success("Data default berhasil digunakan!")
     
