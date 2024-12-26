@@ -57,14 +57,13 @@ with tabs[1]:
     # Logika upload atau gunakan data default
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["analyzed"] = False
-        st.write("Data dari file berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
-
+        st.session_state["analyzed"] = False  # Reset analyzed jika ada data baru
+        st.success("Data berhasil dimuat dari file.")
     elif use_default:
         st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["analyzed"] = False
-        st.write("Data default berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
-
+        st.session_state["analyzed"] = False  # Reset analyzed jika ada data baru
+        st.success("Data default berhasil dimuat.")
+    
     # Tombol Analyze
     if analyze_button:
         if st.session_state["data"] is not None:
@@ -75,7 +74,7 @@ with tabs[1]:
 
     # Tampilkan data
     if st.session_state["data"] is not None:
-        st.write("**Data Saat Ini:**")
+        st.write("**Data yang Dimuat:**")
         st.dataframe(st.session_state["data"])
 
 # Tab 3: Preprocessing
