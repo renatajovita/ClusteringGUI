@@ -31,12 +31,12 @@ def main():
 
     # Tab panel
     tabs = st.tabs(["1. Upload Data", "2. Preprocessing & Elbow Method", "3. Clustering", "4. Evaluation", "5. Relabel & Export"])
-    
+
     # Tab 1: Upload Data
     with tabs[0]:
         uploaded_file = st.file_uploader("Upload CSV File", type="csv")
         use_default = st.checkbox("Gunakan Data Default")
-        
+
         if uploaded_file:
             st.session_state.data = pd.read_csv(uploaded_file)
             st.success("Data berhasil dimuat dari file upload.")
@@ -47,7 +47,7 @@ def main():
                 st.success("Data default berhasil dimuat.")
             except FileNotFoundError:
                 st.error("File default tidak ditemukan. Pastikan file 'case1.csv' ada di repositori.")
-        
+
         if st.session_state.data is not None:
             display_data(st.session_state.data, "Data Asli")
 
@@ -59,7 +59,7 @@ def main():
             st.session_state.processed_data = scaler.fit_transform(st.session_state.data[numeric_columns])
             processed_df = pd.DataFrame(st.session_state.processed_data, columns=numeric_columns)
             display_data(processed_df, "Data Distandarisasi")
-            
+
             st.write("### Elbow Method")
             sse = []
             k_range = range(1, 11)
@@ -67,7 +67,7 @@ def main():
                 kmeans = KMeans(n_clusters=k, random_state=42)
                 kmeans.fit(st.session_state.processed_data)
                 sse.append(kmeans.inertia_)
-            
+
             fig, ax = plt.subplots()
             ax.plot(k_range, sse, marker='o')
             ax.set_title("Elbow Method")
