@@ -73,19 +73,21 @@ if menu == "Upload Data":
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["data_ready"] = False  # Reset setelah upload file baru
         st.success("Data berhasil dimuat!")
-        
-    if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
-        st.success("Data default dimuat!")
+
+    col1, col2 = st.columns(2)  # Membuat dua kolom
+    with col1:
+        if st.button("Gunakan Data Default"):
+            st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
+            st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
+            st.success("Data default dimuat!")
+    with col2:
+        if st.button("Analyze"):
+            st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
+            st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
     if st.session_state["data"] is not None:
         st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
-    
-    if st.button("Analyze"):
-        st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
-        st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
 # Halaman Preprocessing
 elif menu == "Preprocessing":
