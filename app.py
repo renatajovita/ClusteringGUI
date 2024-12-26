@@ -20,19 +20,15 @@ st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 # Session state untuk menyimpan data
 if "data" not in st.session_state:
     st.session_state["data"] = None
-if "data_source" not in st.session_state:
-    st.session_state["data_source"] = None  # Menyimpan sumber data ("upload" atau "default")
-if "analyzed" not in st.session_state:
-    st.session_state["analyzed"] = False
 if "processed_data" not in st.session_state:
     st.session_state["processed_data"] = None
 if "clustering_labels" not in st.session_state:
     st.session_state["clustering_labels"] = None
-if "relabel_mapping" not in st.session_state:
-    st.session_state["relabel_mapping"] = {}
+if "analyzed" not in st.session_state:
+    st.session_state["analyzed"] = False
 
 # Tab Navigasi
-tabs = st.tabs(["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel Clusters", "Download"])
+tabs = st.tabs(["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Visualization", "Download"])
 
 # Tab 1: Kelompok
 with tabs[0]:
@@ -52,45 +48,35 @@ with tabs[0]:
 # Tab 2: Upload Data
 with tabs[1]:
     st.title("1. Upload Data")
-    
-    # Tampilkan sumber data aktif
-    if st.session_state["data_source"]:
-        st.info(f"**Sumber Data Saat Ini**: {st.session_state['data_source'].capitalize()}")
 
     # Opsi unggah data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
+    use_default = st.button("Gunakan Data Default")
+    analyze_button = st.button("Analyze")
+
+    # Logika upload atau gunakan data default
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["data_source"] = "upload"
-        st.session_state["analyzed"] = False  # Reset state analyze
-        st.success("Data berhasil diunggah. Klik 'Analyze' untuk memulai analisis!")
+        st.session_state["analyzed"] = False
+        st.write("Data dari file berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
 
-    # Opsi gunakan data default
-    if st.button("Gunakan Data Default"):
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["data_source"] = "default"
-        st.session_state["analyzed"] = False  # Reset state analyze
-        st.success("Data default berhasil dimuat. Klik 'Analyze' untuk memulai analisis!")
+    elif use_default:
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["analyzed"] = False
+        st.write("Data default berhasil dimuat. Klik 'Analyze' untuk melanjutkan.")
 
     # Tombol Analyze
-    if st.session_state["data"] is not None:
-        if st.button("Analyze"):
+    if analyze_button:
+        if st.session_state["data"] is not None:
             st.session_state["analyzed"] = True
-            st.success("Data siap untuk analisis selanjutnya!")
-        st.write("**Data yang Dimuat Saat Ini:**")
-        st.dataframe(st.session_state["data"])
-    else:
-        st.warning("Silakan unggah data atau gunakan data default untuk melanjutkan.")
+            st.success("Data siap untuk analisis selanjutnya.")
+        else:
+            st.error("Tidak ada data yang dimuat. Silakan unggah data atau gunakan data default.")
 
-    # Tombol Reset
-    if st.button("Reset Data"):
-        st.session_state["data"] = None
-        st.session_state["data_source"] = None
-        st.session_state["analyzed"] = False
-        st.session_state["processed_data"] = None
-        st.session_state["clustering_labels"] = None
-        st.session_state["relabel_mapping"] = {}
-        st.warning("Data telah direset.")
+    # Tampilkan data
+    if st.session_state["data"] is not None:
+        st.write("**Data Saat Ini:**")
+        st.dataframe(st.session_state["data"])
 
 # Tab 3: Preprocessing
 with tabs[2]:
@@ -144,26 +130,40 @@ with tabs[4]:
             st.write("Data dengan hasil clustering:")
             st.dataframe(st.session_state["data"])
 
-# Tab 6: Relabel Clusters
-with tabs[7]:
-    st.title("7. Relabel Clusters")
+# Tab 6: Visualization
+with tabs[5]:
+    st.title("5. Visualization")
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
-        unique_clusters = sorted(set(st.session_state["clustering_labels"]))
-        for cluster in unique_clusters:
-            new_label = st.text_input(f"Label baru untuk Cluster {cluster}:", f"Cluster {cluster}")
-            st.session_state["relabel_mapping"][cluster] = new_label
+        choice = st.radio("Pilih Visualisasi", ["2D PCA", "3D PCA"])
+        if st.button("Tampilkan Visualisasi"):
+            if choice == "2D PCA":
+                pca = PCA(n_components=2)
+                reduced_data = pca.fit_transform(st.session_state["processed_data"])
+                fig, ax = plt.subplots()
+                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1],
+                                     c=st.session_state["clustering_labels"], cmap="viridis")
+                ax.set_title("Visualisasi Klaster 2D")
+                ax.set_xlabel("Komponen Utama 1")
+                ax.set_ylabel("Komponen Utama 2")
+                st.pyplot(fig)
+            elif choice == "3D PCA":
+                pca = PCA(n_components=3)
+                reduced_data = pca.fit_transform(st.session_state["processed_data"])
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection="3d")
+                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 2],
+                                     c=st.session_state["clustering_labels"], cmap="viridis")
+                ax.set_title("Visualisasi Klaster 3D")
+                ax.set_xlabel("Komponen Utama 1")
+                ax.set_ylabel("Komponen Utama 2")
+                ax.set_zlabel("Komponen Utama 3")
+                st.pyplot(fig)
 
-        if st.button("Perbarui Label"):
-            st.session_state["data"]["Cluster"] = st.session_state["data"]["Cluster"].map(st.session_state["relabel_mapping"])
-            st.success("Label berhasil diperbarui!")
-            st.write("Data dengan label baru:")
-            st.dataframe(st.session_state["data"])
-
-# Tab 9: Download
-with tabs[8]:
-    st.title("8. Download")
+# Tab 7: Download
+with tabs[6]:
+    st.title("6. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
