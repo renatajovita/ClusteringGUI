@@ -10,74 +10,86 @@ import base64
 # Fungsi untuk mengunduh DataFrame sebagai CSV
 def download_csv(dataframe, filename="clustered_data.csv"):
     csv = dataframe.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()  # Encoding ke Base64
+    b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Klik di sini untuk mengunduh file CSV</a>'
     return href
 
 # Konfigurasi Streamlit
 st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 
-# Header aplikasi
-st.title("Clustering Analysis App")
-st.write("Analisis clustering dengan fitur unggulan seperti preprocessing, elbow method, clustering, dan evaluasi.")
+# Session state untuk menyimpan data
+if "data" not in st.session_state:
+    st.session_state["data"] = None
+if "processed_data" not in st.session_state:
+    st.session_state["processed_data"] = None
+if "clustering_labels" not in st.session_state:
+    st.session_state["clustering_labels"] = None
 
-# Variabel global
-data = None
-processed_data = None
-clustering_labels = None
-
-# Sidebar Navigasi
+# Sidebar navigasi
 st.sidebar.title("Navigasi")
-page = st.sidebar.radio(
-    "Pilih Halaman",
-    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"]
+menu = st.sidebar.radio(
+    "Pilih Halaman:",
+    ["Kelompok", "Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"]
 )
 
-# Fungsi untuk memuat data
-def load_data():
-    uploaded_file = st.sidebar.file_uploader("Unggah file CSV Anda", type=["csv"])
-    if uploaded_file is not None:
-        return pd.read_csv(uploaded_file)
-    elif st.sidebar.button("Gunakan Data Default"):
-        # Ganti path ini dengan data default Anda
-        return pd.read_csv("case1.csv")
-    return None
+# Halaman Kelompok
+if menu == "Kelompok":
+    st.title("Clustering Analysis GUI")
+    st.write("""
+    ## Disusun oleh:
+    - **Alya Faadhila Rosyid** (24050122130049)
+    - **Mesakh Besta Anugrah** (24050122130058)
+    - **Renata Jovita Aurelia Dinda** (24050122130094)
+    
+    ### DEPARTEMEN STATISTIKA  
+    FAKULTAS SAINS DAN MATEMATIKA  
+    UNIVERSITAS DIPONEGORO  
+    SEMARANG - 2024
+    """)
 
 # Halaman Upload Data
-if page == "Upload Data":
-    st.subheader("1. Upload Data")
-    data = load_data()
-    if data is not None:
-        st.write("Data yang dimuat:")
-        st.dataframe(data)
-    else:
-        st.warning("Unggah file CSV terlebih dahulu atau gunakan data default.")
+elif menu == "Upload Data":
+    st.title("1. Upload Data")
+    uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
+    if uploaded_file:
+        st.session_state["data"] = pd.read_csv(uploaded_file)
+        st.success("Data berhasil dimuat!")
+    if st.button("Gunakan Data Default"):
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.success("Data default dimuat!")
+    if st.session_state["data"] is not None:
+        st.write("Data yang Dimuat:")
+        st.dataframe(st.session_state["data"])
 
 # Halaman Preprocessing
-if page == "Preprocessing":
-    if data is None:
+elif menu == "Preprocessing":
+    st.title("2. Preprocessing")
+    if st.session_state["data"] is None:
         st.warning("Silakan unggah data terlebih dahulu di halaman 'Upload Data'.")
     else:
-        st.subheader("2. Preprocessing")
         if st.button("Standarisasi Data"):
             scaler = StandardScaler()
-            processed_data = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
-            st.success("Data telah distandarisasi.")
-            st.write("Data yang telah distandarisasi:")
-            st.dataframe(pd.DataFrame(processed_data, columns=data.select_dtypes(include=['float64', 'int64']).columns))
+            st.session_state["processed_data"] = scaler.fit_transform(
+                st.session_state["data"].select_dtypes(include=['float64', 'int64'])
+            )
+            st.success("Data telah distandarisasi!")
+            st.write(pd.DataFrame(
+                st.session_state["processed_data"],
+                columns=st.session_state["data"].select_dtypes(include=['float64', 'int64']).columns
+            ))
 
 # Halaman Elbow Method
-if page == "Elbow Method":
-    if processed_data is None:
-        st.warning("Silakan lakukan preprocessing data di halaman 'Preprocessing'.")
+elif menu == "Elbow Method":
+    st.title("3. Elbow Method")
+    if st.session_state["processed_data"] is None:
+        st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
-        st.subheader("3. Elbow Method")
         if st.button("Lihat Grafik Elbow"):
             sse = []
             k_range = range(1, 11)
             for k in k_range:
                 kmeans = KMeans(n_clusters=k, random_state=42)
-                kmeans.fit(processed_data)
+                kmeans.fit(st.session_state["processed_data"])
                 sse.append(kmeans.inertia_)
             fig, ax = plt.subplots()
             ax.plot(k_range, sse, marker="o")
@@ -87,65 +99,67 @@ if page == "Elbow Method":
             st.pyplot(fig)
 
 # Halaman Clustering
-if page == "Clustering":
-    if processed_data is None:
-        st.warning("Silakan lakukan preprocessing data di halaman 'Preprocessing'.")
+elif menu == "Clustering":
+    st.title("4. Clustering")
+    if st.session_state["processed_data"] is None:
+        st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
-        st.subheader("4. Clustering")
         k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=3)
         if st.button("Jalankan K-Means"):
             kmeans = KMeans(n_clusters=k, random_state=42)
-            clustering_labels = kmeans.fit_predict(processed_data)
-            data["Cluster"] = clustering_labels
+            st.session_state["clustering_labels"] = kmeans.fit_predict(st.session_state["processed_data"])
+            st.session_state["data"]["Cluster"] = st.session_state["clustering_labels"]
             st.success(f"Clustering selesai dengan k={k}.")
             st.write("Data dengan hasil clustering:")
-            st.dataframe(data)
+            st.dataframe(st.session_state["data"])
 
 # Halaman Evaluation
-if page == "Evaluation":
-    if clustering_labels is None:
-        st.warning("Silakan lakukan clustering di halaman 'Clustering'.")
+elif menu == "Evaluation":
+    st.title("5. Evaluation")
+    if st.session_state["clustering_labels"] is None:
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
-        st.subheader("5. Evaluation")
         if st.button("Evaluasi Klaster"):
-            silhouette_avg = silhouette_score(processed_data, clustering_labels)
+            silhouette_avg = silhouette_score(
+                st.session_state["processed_data"], st.session_state["clustering_labels"]
+            )
             st.write(f"Silhouette Score: {silhouette_avg:.2f}")
 
 # Halaman Visualization
-if page == "Visualization":
-    if clustering_labels is None:
-        st.warning("Silakan lakukan clustering di halaman 'Clustering'.")
+elif menu == "Visualization":
+    st.title("6. Visualization")
+    if st.session_state["clustering_labels"] is None:
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
-        st.subheader("6. Visualization")
-        visualization_choice = st.selectbox("Pilih Visualisasi", ["2D PCA", "3D PCA"])
+        choice = st.radio("Pilih Visualisasi", ["2D PCA", "3D PCA"])
         if st.button("Tampilkan Visualisasi"):
-            if visualization_choice == "2D PCA":
+            if choice == "2D PCA":
                 pca = PCA(n_components=2)
-                reduced_data = pca.fit_transform(processed_data)
+                reduced_data = pca.fit_transform(st.session_state["processed_data"])
                 fig, ax = plt.subplots()
-                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], c=clustering_labels, cmap="viridis", s=50)
+                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1],
+                                     c=st.session_state["clustering_labels"], cmap="viridis")
                 ax.set_title("Visualisasi Klaster 2D")
                 ax.set_xlabel("Komponen Utama 1")
                 ax.set_ylabel("Komponen Utama 2")
-                fig.colorbar(scatter, label="Klaster")
                 st.pyplot(fig)
-            elif visualization_choice == "3D PCA":
+            elif choice == "3D PCA":
                 pca = PCA(n_components=3)
-                reduced_data = pca.fit_transform(processed_data)
+                reduced_data = pca.fit_transform(st.session_state["processed_data"])
                 fig = plt.figure()
                 ax = fig.add_subplot(111, projection="3d")
-                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 2], c=clustering_labels, cmap="viridis", s=50)
+                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 2],
+                                     c=st.session_state["clustering_labels"], cmap="viridis")
                 ax.set_title("Visualisasi Klaster 3D")
                 ax.set_xlabel("Komponen Utama 1")
                 ax.set_ylabel("Komponen Utama 2")
                 ax.set_zlabel("Komponen Utama 3")
-                fig.colorbar(scatter, label="Klaster")
                 st.pyplot(fig)
 
 # Halaman Download
-if page == "Download":
-    if data is None or "Cluster" not in data.columns:
-        st.warning("Silakan lakukan clustering di halaman 'Clustering'.")
+elif menu == "Download":
+    st.title("7. Download")
+    if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
+        st.warning("Tidak ada data untuk diunduh.")
     else:
-        st.subheader("7. Download")
-        st.markdown(download_csv(data), unsafe_allow_html=True)
+        st.markdown(download_csv(st.session_state["data"]), unsafe_allow_html=True)
