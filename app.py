@@ -22,6 +22,8 @@ if "data" not in st.session_state:
     st.session_state["data"] = None
 if "data_source" not in st.session_state:
     st.session_state["data_source"] = None  # Menyimpan sumber data ("upload" atau "default")
+if "analyzed" not in st.session_state:
+    st.session_state["analyzed"] = False
 if "processed_data" not in st.session_state:
     st.session_state["processed_data"] = None
 if "clustering_labels" not in st.session_state:
@@ -60,35 +62,41 @@ with tabs[1]:
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
         st.session_state["data_source"] = "upload"
-        st.success("Data berhasil diunggah dan digunakan!")
-    
+        st.session_state["analyzed"] = False  # Reset state analyze
+        st.success("Data berhasil diunggah. Klik 'Analyze' untuk memulai analisis!")
+
     # Opsi gunakan data default
     if st.button("Gunakan Data Default"):
         st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
         st.session_state["data_source"] = "default"
-        st.success("Data default berhasil digunakan!")
-    
-    # Reset data
+        st.session_state["analyzed"] = False  # Reset state analyze
+        st.success("Data default berhasil dimuat. Klik 'Analyze' untuk memulai analisis!")
+
+    # Tombol Analyze
+    if st.session_state["data"] is not None:
+        if st.button("Analyze"):
+            st.session_state["analyzed"] = True
+            st.success("Data siap untuk analisis selanjutnya!")
+        st.write("**Data yang Dimuat Saat Ini:**")
+        st.dataframe(st.session_state["data"])
+    else:
+        st.warning("Silakan unggah data atau gunakan data default untuk melanjutkan.")
+
+    # Tombol Reset
     if st.button("Reset Data"):
         st.session_state["data"] = None
         st.session_state["data_source"] = None
+        st.session_state["analyzed"] = False
         st.session_state["processed_data"] = None
         st.session_state["clustering_labels"] = None
         st.session_state["relabel_mapping"] = {}
         st.warning("Data telah direset.")
 
-    # Tampilkan data saat ini
-    if st.session_state["data"] is not None:
-        st.write("**Data yang Dimuat Saat Ini:**")
-        st.dataframe(st.session_state["data"])
-    else:
-        st.warning("Belum ada data yang dimuat. Silakan unggah data atau gunakan data default.")
-
 # Tab 3: Preprocessing
 with tabs[2]:
     st.title("2. Preprocessing")
-    if st.session_state["data"] is None:
-        st.warning("Silakan unggah data terlebih dahulu di tab 'Upload Data'.")
+    if not st.session_state["analyzed"]:
+        st.warning("Silakan klik 'Analyze' di tab 'Upload Data' untuk melanjutkan.")
     else:
         if st.button("Standarisasi Data"):
             scaler = StandardScaler()
@@ -104,7 +112,7 @@ with tabs[2]:
 # Tab 4: Elbow Method
 with tabs[3]:
     st.title("3. Elbow Method")
-    if st.session_state["processed_data"] is None:
+    if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         if st.button("Lihat Grafik Elbow"):
@@ -124,7 +132,7 @@ with tabs[3]:
 # Tab 5: Clustering
 with tabs[4]:
     st.title("4. Clustering")
-    if st.session_state["processed_data"] is None:
+    if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=3)
@@ -136,50 +144,7 @@ with tabs[4]:
             st.write("Data dengan hasil clustering:")
             st.dataframe(st.session_state["data"])
 
-# Tab 6: Evaluation
-with tabs[5]:
-    st.title("5. Evaluation")
-    if st.session_state["clustering_labels"] is None:
-        st.warning("Silakan lakukan clustering terlebih dahulu.")
-    else:
-        if st.button("Evaluasi Klaster"):
-            silhouette_avg = silhouette_score(
-                st.session_state["processed_data"], st.session_state["clustering_labels"]
-            )
-            st.write(f"Silhouette Score: {silhouette_avg:.2f}")
-
-# Tab 7: Visualization
-with tabs[6]:
-    st.title("6. Visualization")
-    if st.session_state["clustering_labels"] is None:
-        st.warning("Silakan lakukan clustering terlebih dahulu.")
-    else:
-        choice = st.radio("Pilih Visualisasi", ["2D PCA", "3D PCA"])
-        if st.button("Tampilkan Visualisasi"):
-            if choice == "2D PCA":
-                pca = PCA(n_components=2)
-                reduced_data = pca.fit_transform(st.session_state["processed_data"])
-                fig, ax = plt.subplots()
-                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1],
-                                     c=st.session_state["clustering_labels"], cmap="viridis")
-                ax.set_title("Visualisasi Klaster 2D")
-                ax.set_xlabel("Komponen Utama 1")
-                ax.set_ylabel("Komponen Utama 2")
-                st.pyplot(fig)
-            elif choice == "3D PCA":
-                pca = PCA(n_components=3)
-                reduced_data = pca.fit_transform(st.session_state["processed_data"])
-                fig = plt.figure()
-                ax = fig.add_subplot(111, projection="3d")
-                scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 2],
-                                     c=st.session_state["clustering_labels"], cmap="viridis")
-                ax.set_title("Visualisasi Klaster 3D")
-                ax.set_xlabel("Komponen Utama 1")
-                ax.set_ylabel("Komponen Utama 2")
-                ax.set_zlabel("Komponen Utama 3")
-                st.pyplot(fig)
-
-# Tab 8: Relabel Clusters
+# Tab 6: Relabel Clusters
 with tabs[7]:
     st.title("7. Relabel Clusters")
     if st.session_state["clustering_labels"] is None:
