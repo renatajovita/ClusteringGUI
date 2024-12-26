@@ -10,69 +10,57 @@ import base64
 # Fungsi untuk mengunduh DataFrame sebagai CSV
 def download_csv(dataframe, filename="clustered_data.csv"):
     csv = dataframe.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
+    b64 = base64.b64encode(csv.encode()).decode()  # Encoding ke Base64
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Klik di sini untuk mengunduh file CSV</a>'
     return href
 
 # Konfigurasi Streamlit
 st.set_page_config(page_title="Clustering Analysis App", layout="wide")
 
-# Inisialisasi session state
+# Session state untuk menyimpan data
 if "data" not in st.session_state:
     st.session_state["data"] = None
 if "processed_data" not in st.session_state:
     st.session_state["processed_data"] = None
 if "clustering_labels" not in st.session_state:
     st.session_state["clustering_labels"] = None
-if "analyzed" not in st.session_state:
-    st.session_state["analyzed"] = False
+if "data_ready" not in st.session_state:
+    st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
 
-# Tab Navigasi
-tabs = st.tabs(["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Visualization", "Download"])
+# Sidebar navigasi
+st.sidebar.title("Navigasi")
+menu = st.sidebar.radio(
+    "Pilih Halaman:",
+    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"]
+)
 
-# Tab 1: Upload Data
-with tabs[0]:
+# Halaman Upload Data
+if menu == "Upload Data":
     st.title("1. Upload Data")
-
-    # Input data
     uploaded_file = st.file_uploader("Unggah file CSV Anda", type=["csv"])
-    col1, col2 = st.columns(2)
-    with col1:
-        use_default = st.button("Gunakan Data Default")
-    with col2:
-        analyze_button = st.button("Analyze")
-
-    # Reset data jika file baru diunggah atau default dipilih
+    
     if uploaded_file:
         st.session_state["data"] = pd.read_csv(uploaded_file)
-        st.session_state["processed_data"] = None
-        st.session_state["clustering_labels"] = None
-        st.session_state["analyzed"] = False
-        st.success("Data berhasil dimuat dari file.")
-    elif use_default:
-        st.session_state["data"] = pd.read_csv("case1.csv")  # Ganti path sesuai
-        st.session_state["processed_data"] = None
-        st.session_state["clustering_labels"] = None
-        st.session_state["analyzed"] = False
-        st.success("Data default berhasil dimuat.")
+        st.session_state["data_ready"] = False  # Reset setelah upload file baru
+        st.success("Data berhasil dimuat!")
+        
+    if st.button("Gunakan Data Default"):
+        st.session_state["data"] = pd.read_csv("path/to/your/default/case1.csv")  # Ganti path sesuai
+        st.session_state["data_ready"] = False  # Reset setelah menggunakan data default
+        st.success("Data default dimuat!")
 
-    # Tombol Analyze
-    if analyze_button:
-        if st.session_state["data"] is not None:
-            st.session_state["analyzed"] = True
-            st.success("Data siap untuk analisis selanjutnya.")
-        else:
-            st.error("Silakan unggah data atau gunakan data default sebelum melanjutkan.")
-
-    # Tampilkan data yang dimuat
     if st.session_state["data"] is not None:
-        st.write("**Data yang Dimuat:**")
+        st.write("Data yang Dimuat:")
         st.dataframe(st.session_state["data"])
+    
+    if st.button("Analyze"):
+        st.session_state["data_ready"] = True  # Menandakan data siap untuk diproses
+        st.success("Data siap untuk dianalisis! Klik tab selanjutnya untuk melanjutkan.")
 
-# Tab 2: Preprocessing
-with tabs[1]:
+# Halaman Preprocessing
+elif menu == "Preprocessing":
     st.title("2. Preprocessing")
-    if not st.session_state["analyzed"]:
+    if not st.session_state["data_ready"]:
         st.warning("Silakan klik 'Analyze' di tab 'Upload Data' untuk melanjutkan.")
     else:
         if st.button("Standarisasi Data"):
@@ -86,10 +74,10 @@ with tabs[1]:
                 columns=st.session_state["data"].select_dtypes(include=['float64', 'int64']).columns
             ))
 
-# Tab 3: Elbow Method
-with tabs[2]:
+# Halaman Elbow Method
+elif menu == "Elbow Method":
     st.title("3. Elbow Method")
-    if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
+    if st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         if st.button("Lihat Grafik Elbow"):
@@ -106,10 +94,10 @@ with tabs[2]:
             ax.set_title("Metode Elbow")
             st.pyplot(fig)
 
-# Tab 4: Clustering
-with tabs[3]:
+# Halaman Clustering
+elif menu == "Clustering":
     st.title("4. Clustering")
-    if not st.session_state["analyzed"] or st.session_state["processed_data"] is None:
+    if st.session_state["processed_data"] is None:
         st.warning("Silakan lakukan preprocessing data terlebih dahulu.")
     else:
         k = st.number_input("Jumlah Klaster (k):", min_value=2, max_value=10, value=3)
@@ -121,9 +109,21 @@ with tabs[3]:
             st.write("Data dengan hasil clustering:")
             st.dataframe(st.session_state["data"])
 
-# Tab 5: Visualization
-with tabs[4]:
-    st.title("5. Visualization")
+# Halaman Evaluation
+elif menu == "Evaluation":
+    st.title("5. Evaluation")
+    if st.session_state["clustering_labels"] is None:
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
+    else:
+        if st.button("Evaluasi Klaster"):
+            silhouette_avg = silhouette_score(
+                st.session_state["processed_data"], st.session_state["clustering_labels"]
+            )
+            st.write(f"Silhouette Score: {silhouette_avg:.2f}")
+
+# Halaman Visualization
+elif menu == "Visualization":
+    st.title("6. Visualization")
     if st.session_state["clustering_labels"] is None:
         st.warning("Silakan lakukan clustering terlebih dahulu.")
     else:
@@ -152,9 +152,9 @@ with tabs[4]:
                 ax.set_zlabel("Komponen Utama 3")
                 st.pyplot(fig)
 
-# Tab 6: Download
-with tabs[5]:
-    st.title("6. Download")
+# Halaman Download
+elif menu == "Download":
+    st.title("7. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
