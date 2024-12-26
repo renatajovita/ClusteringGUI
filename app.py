@@ -27,13 +27,12 @@ if "clustering_labels" not in st.session_state:
 if "data_ready" not in st.session_state:
     st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
 
-# Menambahkan tombol Reset untuk menghapus data dan reset UI
-def reset_app():
+# Fungsi reset untuk mengembalikan session state ke keadaan awal
+def reset_state():
     st.session_state["data"] = None
     st.session_state["processed_data"] = None
     st.session_state["clustering_labels"] = None
     st.session_state["data_ready"] = False
-    st.experimental_rerun()  # Me-reset halaman dan kembali ke keadaan awal
 
 # Top bar navigation
 menu = st.radio(
@@ -41,10 +40,6 @@ menu = st.radio(
     ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
     horizontal=True
 )
-
-# Tambahkan tombol Reset di sidebar atau bagian atas UI
-if st.button("Reset"):
-    reset_app()
 
 # Halaman Upload Data
 if menu == "Upload Data":
@@ -189,3 +184,8 @@ elif menu == "Download":
         st.warning("Tidak ada data untuk diunduh.")
     else:
         st.markdown(download_csv(st.session_state["data"]), unsafe_allow_html=True)
+
+# Tombol Reset
+if st.button("Reset"):
+    reset_state()
+    st.success("Semua data dan analisis telah direset.")
