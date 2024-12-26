@@ -34,12 +34,24 @@ def reset_state():
     st.session_state["clustering_labels"] = None
     st.session_state["data_ready"] = False
 
-# Top bar navigation
-menu = st.radio(
-    "Navigasi",
-    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
-    horizontal=True
-)
+# Fungsi layout untuk tombol
+def layout_buttons():
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("Reset"):
+            reset_state()
+            st.success("Semua data dan analisis telah direset.")
+    with col2:
+        # Navigation bar yang digunakan untuk memilih halaman
+        menu = st.radio(
+            "Navigasi",
+            ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
+            horizontal=True
+        )
+    return menu
+
+# Menampilkan tombol Reset dan navigasi
+menu = layout_buttons()
 
 # Halaman Upload Data
 if menu == "Upload Data":
@@ -153,7 +165,7 @@ elif menu == "Visualization":
                 ax = fig.add_subplot(111, projection="3d")
                 scatter = ax.scatter(reduced_data[:, 0], reduced_data[:, 1], reduced_data[:, 2],
                                      c=st.session_state["clustering_labels"], cmap="viridis")
-                ax.set_title("Visualisasi Klaster 3D")
+                ax.set_title("Visualisasi Klaster dalam 3D")
                 ax.set_xlabel("Komponen Utama 1")
                 ax.set_ylabel("Komponen Utama 2")
                 ax.set_zlabel("Komponen Utama 3")
@@ -184,8 +196,3 @@ elif menu == "Download":
         st.warning("Tidak ada data untuk diunduh.")
     else:
         st.markdown(download_csv(st.session_state["data"]), unsafe_allow_html=True)
-
-# Tombol Reset
-if st.button("Reset"):
-    reset_state()
-    st.success("Semua data dan analisis telah direset.")
