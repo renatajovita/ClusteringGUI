@@ -30,7 +30,7 @@ if "data_ready" not in st.session_state:
 # Top bar navigation
 menu = st.radio(
     "Navigasi",
-    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"],
+    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Relabel", "Download"],
     horizontal=True
 )
 
@@ -152,9 +152,27 @@ elif menu == "Visualization":
                 ax.set_zlabel("Komponen Utama 3")
                 st.pyplot(fig)
 
+# Halaman Relabel Clusters
+elif menu == "Relabel":
+    st.title("7. Relabel Clusters")
+    if st.session_state["clustering_labels"] is None:
+        st.warning("Silakan lakukan clustering terlebih dahulu.")
+    else:
+        st.write("Masukkan label baru untuk setiap klaster:")
+        unique_labels = sorted(set(st.session_state["clustering_labels"]))
+        new_labels = {}
+        for label in unique_labels:
+            new_label = st.text_input(f"Cluster {label}", f"Cluster {label}")
+            new_labels[label] = new_label
+        
+        if st.button("Update Labels"):
+            st.session_state["data"]["Cluster"] = st.session_state["data"]["Cluster"].map(new_labels)
+            st.success("Label klaster berhasil diperbarui!")
+            st.write(st.session_state["data"])
+
 # Halaman Download
 elif menu == "Download":
-    st.title("7. Download")
+    st.title("8. Download")
     if st.session_state["data"] is None or "Cluster" not in st.session_state["data"].columns:
         st.warning("Tidak ada data untuk diunduh.")
     else:
