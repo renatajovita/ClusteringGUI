@@ -27,11 +27,11 @@ if "clustering_labels" not in st.session_state:
 if "data_ready" not in st.session_state:
     st.session_state["data_ready"] = False  # Menyimpan status apakah data sudah siap untuk analisis
 
-# Sidebar navigasi
-st.sidebar.title("Navigasi")
-menu = st.sidebar.radio(
-    "Pilih Halaman:",
-    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"]
+# Top bar navigation
+menu = st.radio(
+    "Navigasi",
+    ["Upload Data", "Preprocessing", "Elbow Method", "Clustering", "Evaluation", "Visualization", "Download"],
+    horizontal=True
 )
 
 # Halaman Upload Data
